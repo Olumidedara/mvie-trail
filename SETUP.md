@@ -47,11 +47,19 @@ The dashboard triggers runs via the GitHub API, so it needs a token:
    | `NEXT_PUBLIC_GITHUB_REPO` | your repo name |
    | `GH_PAT` | the fine-grained token from step 4 |
    | `CRON_SECRET` | any random string (protects `/api/cron`) |
+   | `KV_REST_API_URL` | your Upstash/Redis REST URL (step 5) |
+   | `KV_REST_API_TOKEN` | your Upstash/Redis REST token (step 5) |
 
-5. **Link a KV Store** (Storage → Create → KV → free) so your schedule persists. Vercel injects `KV_URL` automatically.
+5. **Store the schedule in Redis** — the schedule is the only KV consumer (`dashboard/lib/schedule.ts` via `@vercel/kv`). The app reads just two env names: `KV_REST_API_URL` + `KV_REST_API_TOKEN`. You don't need Vercel's Storage/KV marketplace (it may not even show the "KV" product on your account) — any Upstash-protocol Redis works, including **Upstash** and **Vercel Redis**:
+
+   - **Upstash** (recommended): upstash.com → create a free Redis database → copy REST URL + token from the console.
+   - **Vercel Redis**: add a Redis store in the project; it injects `REDIS_REST_API_*` vars — copy those values into `KV_REST_API_URL`/`KV_REST_API_TOKEN` so the client picks them up.
+
+   The var *names* are what matter; the provider doesn't.
+
 6. Deploy. The dashboard at `https://<your-app>.vercel.app` now has Home / Library / Settings.
 
-## 6. Verify the schedule
+## 7. Verify the schedule
 
 The `dashboard/vercel.json` registers `/api/cron` every 15 minutes, which fires generations when your schedule says so. Check Settings → Schedule on the dashboard.
 
@@ -61,7 +69,7 @@ The `dashboard/vercel.json` registers `/api/cron` every 15 minutes, which fires 
 - Groq free tier — $0
 - Pexels free API — $0
 - edge-tts (Microsoft) — $0
-- Vercel Hobby + KV — $0
+- Vercel Hobby + Upstash Redis (free) — $0
 
 ## Troubleshooting
 
@@ -69,4 +77,5 @@ The `dashboard/vercel.json` registers `/api/cron` every 15 minutes, which fires 
 - **Run now button error "Missing GH_PAT"** → set `GH_PAT` in Vercel env vars and redeploy.
 - **Dispatch is 403** → the fine-grained token needs **Actions: Read and write**.
 - **Manifest not updating** → check **Contents: Read and write** permission and that the workflow's `git push` step isn't rejected (`[skip ci]` is used to avoid re-triggering).
+- **Schedule not saving** → `@vercel/kv` needs `KV_REST_API_URL` + `KV_REST_API_TOKEN` in Vercel env vars (provider-agnostic names; see step 5) and a redeploy.
 - **Groq rate limited** → lower `max_videos_per_run` in `config.json` or the dashboard schedule.
