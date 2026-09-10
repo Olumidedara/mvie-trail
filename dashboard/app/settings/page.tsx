@@ -54,7 +54,9 @@ export default function SettingsPage() {
     <div className="space-y-8 max-w-2xl">
       <header>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-zinc-400">Automation schedule. Vercel Cron polls this and triggers the pipeline.</p>
+        <p className="text-sm text-zinc-400">
+          Automation schedule. Vercel Cron (once daily on the free plan) triggers and /api/cron handles the rest.
+        </p>
       </header>
 
       <section className="rounded-2xl border border-line bg-panel p-6 space-y-5">
@@ -85,6 +87,9 @@ export default function SettingsPage() {
                 setSaved(false);
               }}
             />
+            <span className="block pt-1 text-[11px] text-zinc-600">
+              Free plan: Vercel Cron fires once/day at 09:00 UTC, so this time must be within 09:00–10:00 UTC.
+            </span>
           </label>
           <label className="block text-xs text-zinc-400">
             Timezone (IANA)
@@ -162,8 +167,8 @@ export default function SettingsPage() {
 
       <section className="rounded-2xl border border-line bg-panel p-6 text-sm text-zinc-400 space-y-2">
         <h2 className="font-semibold text-zinc-200">How it works</h2>
-        <p>1 · Vercel Cron hits /api/cron every 15 minutes.</p>
-        <p>2 · If the day + time matches your schedule, it dispatches a GitHub Actions run.</p>
+        <p>1 · Vercel Cron hits /api/cron once daily at 09:00 UTC.</p>
+        <p>2 · If the day matches and you're within the scheduled window, it dispatches one GitHub Actions run.</p>
         <p>3 · The runner generates videos, uploads them to GitHub Releases, and commits the manifest.</p>
         <p>4 · Download from Library and post manually (YouTube / TikTok / Instagram).</p>
       </section>

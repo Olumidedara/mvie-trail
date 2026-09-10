@@ -61,7 +61,11 @@ The dashboard triggers runs via the GitHub API, so it needs a token:
 
 ## 7. Verify the schedule
 
-The `dashboard/vercel.json` registers `/api/cron` every 15 minutes, which fires generations when your schedule says so. Check Settings → Schedule on the dashboard.
+The `dashboard/vercel.json` registers `/api/cron`. **Hobby accounts allow crons that fire at most once per day**, so the cron runs daily at **09:00 UTC** and `/api/cron` decides the rest:
+
+- It dispatches one GitHub Actions run per day when the day is enabled and the configured **time falls within 09:00–10:00 UTC** (`time` in the dashboard + `timezone` field select the window).
+- It can't run at arbitrary times on the free plan — to fire at a different hour, either upgrade to Pro (any cadence) or point a free external cron (e.g. cron-job.org) at `https://<app>.vercel.app/api/cron` with a `Bearer <CRON_SECRET>` header.
+- Check Settings → Schedule on the dashboard.
 
 ## Cost summary
 
