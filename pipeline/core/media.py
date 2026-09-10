@@ -50,7 +50,9 @@ def probe(src: str) -> dict:
     return info
 
 
-def download_http(url: str, dest: str, max_bytes: int = 200 * 1024 * 1024) -> str:
+def download_http(url: str, dest: str, max_bytes: int = 200 * 1024 * 1024, deadline_s: float = 0) -> str:
+    import time
+
     import requests
 
     r = requests.get(url, stream=True, timeout=(15, 120))
@@ -59,10 +61,14 @@ def download_http(url: str, dest: str, max_bytes: int = 200 * 1024 * 1024) -> st
     if length and length > max_bytes:
         r.close()
         raise RuntimeError(f"file too large ({length // 1024 // 1024}MB)")
+    start = time.time()
     with open(dest, "wb") as f:
         for chunk in r.iter_content(1 << 20):
             if chunk:
                 f.write(chunk)
+            if deadline_s and time.time() - start > deadline_s:
+                r.close()
+                raise RuntimeError(f"download exceeded {deadline_s:.0f}s deadline")
     r.close()
     return dest
 

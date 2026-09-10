@@ -18,14 +18,14 @@ def log(msg: str) -> None:
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}", flush=True)
 
 
-def _download(candidate, workdir: str, prefix: str) -> str:
+def _download(candidate, workdir: str, prefix: str, deadline_s: float = 0) -> str:
     ext = ".mp4"
     if candidate.provider == "archive" and "/" in candidate.url:
         ext = os.path.splitext(candidate.url.split("/")[-1])[1] or ".mp4"
     if candidate.provider == "studio":
         return media.download_yt(candidate.url, workdir)
     dest = os.path.join(workdir, f"{prefix}_{candidate.provider}{ext}")
-    media.download_http(candidate.url, dest)
+    media.download_http(candidate.url, dest, deadline_s=deadline_s)
     return dest
 
 
@@ -64,7 +64,7 @@ def run_job(cfg: dict, genre: str, topic: str, job_id: str, skip_upload: bool) -
     if candidate:
         log(f"analysis source: {candidate.provider} {candidate.url}")
         try:
-            candidate.local_path = _download(candidate, workdir, "source")
+            candidate.local_path = _download(candidate, workdir, "source", deadline_s=420)
         except Exception as exc:
             log(f"source download failed: {exc}")
             candidate.local_path = ""
@@ -77,18 +77,20 @@ def run_job(cfg: dict, genre: str, topic: str, job_id: str, skip_upload: bool) -
     for scene in narrative.scenes:
         query = scene.query or scene.visual_hint or genre
         choices = disc.candidates(query, "landscape")
-        chosen = choices[0] if choices else None
+        chosen = None
+        for candidate in choices[:3]:
+            try:
+                scene.clip.provider = candidate.provider
+                scene.clip.url = candidate.url
+                scene.clip.local_path = _download(candidate, workdir, f"clip_{scene.index}", deadline_s=180)
+                chosen = candidate
+                log(f"scene {scene.index}: {candidate.provider} {os.path.basename(scene.clip.local_path)}")
+                break
+            except Exception as exc:
+                scene.clip.local_path = ""
+                log(f"scene {scene.index}: candidate {candidate.provider} failed ({exc})")
         if not chosen:
-            log(f"scene {scene.index}: no clip found for '{query}'")
-            continue
-        scene.clip.provider = chosen.provider
-        scene.clip.url = chosen.url
-        try:
-            scene.clip.local_path = _download(chosen, workdir, f"clip_{scene.index}")
-            log(f"scene {scene.index}: {chosen.provider} {os.path.basename(scene.clip.local_path)}")
-        except Exception as exc:
-            log(f"scene {scene.index}: download failed: {exc}")
-            scene.clip.local_path = ""
+            log(f"scene {scene.index}: no usable clip for '{query}'")
 
     voiceover.generate(cfg, narrative, workdir, log)
 

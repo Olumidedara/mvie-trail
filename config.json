@@ -7,7 +7,7 @@
     "max_candidates_per_scene": 4
   },
   "script": {
-    "model": "llama-3.3-70b-versatile",
+    "model": "openai/gpt-oss-120b",
     "voice_style": "dramatic",
     "total_duration_s": 60,
     "scene_count": 6
