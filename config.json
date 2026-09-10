@@ -1,0 +1,43 @@
+{
+  "source": {
+    "use_studio_trailers": false,
+    "genres": ["vintage science fiction"],
+    "pexels_min_duration": 5,
+    "archive_collections": ["prelinger"],
+    "max_candidates_per_scene": 4
+  },
+  "script": {
+    "model": "llama-3.3-70b-versatile",
+    "voice_style": "dramatic",
+    "total_duration_s": 60,
+    "scene_count": 6
+  },
+  "voiceover": {
+    "voice": "en-US-GuyNeural",
+    "rate": "+0%",
+    "volume": "+0%"
+  },
+  "video": {
+    "vertical": { "width": 1080, "height": 1920, "fps": 30 },
+    "landscape": { "width": 1920, "height": 1080, "fps": 30 },
+    "captions_enabled": true,
+    "caption_font_size": 58,
+    "ken_burns": true
+  },
+  "output": {
+    "dir": "output",
+    "temp_dir": "output/.tmp",
+    "manifest": "output/manifest.json",
+    "jobs_dir": "output/jobs"
+  },
+  "publisher": {
+    "github_repo": "Olumidedara/mvie-trail",
+    "active_jobs_workflow": "pipeline.yml"
+  },
+  "schedule": {
+    "enabled": true,
+    "time": "09:00",
+    "days": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+    "max_videos_per_run": 3
+  }
+}

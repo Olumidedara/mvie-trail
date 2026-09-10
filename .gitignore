@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.env
+.env.local
+__pycache__/
+*.pyc
+.venv/
+venv/
+output/.tmp/
+output/jobs/
+output/*.mp4
+.pytest_cache/
+.DS_Store
